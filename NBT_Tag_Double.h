@@ -6,6 +6,8 @@
 class NBT_Tag_Double : public NBT_Tag
 {
 	public:
+      const char *className() { return "Double"; }
+      
 		  NBT_Tag_Double(bool named = true) : NBT_Tag(named, TAG_Double), number(0.0) {}
 		~NBT_Tag_Double() {}
 		

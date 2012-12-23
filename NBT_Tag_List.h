@@ -7,8 +7,11 @@
 class NBT_Tag_List : public NBT_Tag
 {
 	public:
+      const char *className() { return "List"; }
 		NBT_Tag_List(bool named = true);
 		~NBT_Tag_List();
+		
+		std::string serialize();
 		
 		bool decodeTag(NBT_Buffer *buff);
 		

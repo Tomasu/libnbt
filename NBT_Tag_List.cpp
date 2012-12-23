@@ -2,6 +2,8 @@
 #include "NBT_Buffer.h"
 #include "NBT_Debug.h"
 
+#include <sstream>
+
 NBT_Tag_List::NBT_Tag_List(bool named) : NBT_Tag(named, TAG_List)
 {
 	
@@ -55,4 +57,21 @@ bool NBT_Tag_List::decodeTag(NBT_Buffer *buff)
 	NBT_Debug("List \"%s\" (%s) end (%i)", name().c_str(), itemType < TAG_LAST_ITEM ? NBT_Tag::tagNames[itemType] : "UNKNOWN", count);
 	
 	return true;
+}
+
+std::string NBT_Tag_List::serialize()
+{
+   std::stringstream str;
+   
+   if(named())
+      str << "List(" << name() << "; " << tagNames[itemType]+4 << ") {\n";
+   else
+      str << "List(" << this << "; " << tagNames[itemType]+4 << ") {\n";
+ 
+   for(auto &item: item_list)
+   {
+      str << item->serialize() << "; ";
+   }
+   str << "}\n";
+   return str.str();
 }

@@ -42,6 +42,8 @@ class NBT_Tag_Compound : public NBT_Tag
 		
 		const std::vector<std::string> keys();
 
+		int count() { return children.size(); }
+		
 	private:
 		NBT_TagMap children;
 };

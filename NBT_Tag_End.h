@@ -6,6 +6,7 @@
 class NBT_Tag_End : public NBT_Tag
 {
 	public:
+      const char *className() { return "End"; }
 		NBT_Tag_End(bool named = false) : NBT_Tag(named, TAG_End) { }
 		~NBT_Tag_End() { }
 };

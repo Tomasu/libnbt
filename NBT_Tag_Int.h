@@ -6,6 +6,7 @@
 class NBT_Tag_Int : public NBT_Tag
 {
 	public:
+      const char *className() { return "Int"; }
 		  NBT_Tag_Int(bool named = true) : NBT_Tag(named, TAG_Int), number(0.0) {}
 		~NBT_Tag_Int() {}
 		

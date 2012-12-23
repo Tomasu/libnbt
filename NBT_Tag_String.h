@@ -9,6 +9,7 @@ class NBT_Buffer;
 class NBT_Tag_String : public NBT_Tag
 {
 	public:
+      const char *className() { return "String"; }
 		NBT_Tag_String(bool named = true) : NBT_Tag(named, TAG_String) { }
 		~NBT_Tag_String() { }
 		

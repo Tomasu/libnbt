@@ -6,6 +6,7 @@
 class NBT_Tag_Float : public NBT_Tag
 {
 	public:
+      const char *className() { return "Float"; }
 		  NBT_Tag_Float(bool named = true) : NBT_Tag(named, TAG_Float), number(0.0) {}
 		~NBT_Tag_Float() {}
 		

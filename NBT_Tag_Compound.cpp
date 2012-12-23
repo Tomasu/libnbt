@@ -36,14 +36,29 @@ NBT_Tag_Compound::~NBT_Tag_Compound()
 
 std::string NBT_Tag_Compound::serialize()
 {
-	std::stringstream str("Compound(");
-	str << name() << ") { ";
+	std::stringstream str;
+	if(named())
+      str << "Compound(" << name() << ")";
+      
+   if(count() < 1)
+   {
+      str << " { }";
+      return str.str();
+   }
+   
+   str << " {\n";
 	for (auto &child: children)
 	{
-		str << child.second->serialize() << "; ";
+      if(child.second->type() == TAG_Compound && ((NBT_Tag_Compound*)child.second)->count() < 1)
+         continue; //str << "; ";
+      else
+      if(child.second->type() == TAG_List && ((NBT_Tag_List*)child.second)->count() < 1)
+         continue; //str << "; ";
+      else
+         str << child.second->serialize() << "; ";
 	}
 
-	str << "}\n";
+	str << "};\n";
 	return str.str();
 }
 

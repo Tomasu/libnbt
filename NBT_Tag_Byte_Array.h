@@ -9,6 +9,8 @@ class NBT_Tag_Byte_Array : public NBT_Tag
 		  NBT_Tag_Byte_Array(bool named = true) : NBT_Tag(named, TAG_Byte_Array), size(0), data(0) { }
 		  ~NBT_Tag_Byte_Array();
 		
+		const char *className() { return "Byte_Array"; }
+		
 		bool decodeTag(NBT_Buffer *buff);
 		
 	private:

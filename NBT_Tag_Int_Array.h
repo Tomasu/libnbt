@@ -6,6 +6,7 @@
 class NBT_Tag_Int_Array : public NBT_Tag
 {
 	public:
+      const char *className() { return "Int_Array"; }
 		NBT_Tag_Int_Array(bool named = true) : NBT_Tag(named, TAG_Int_Array) { }
 		~NBT_Tag_Int_Array();
 		

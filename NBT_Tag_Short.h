@@ -8,6 +8,7 @@ class NBT_Buffer;
 class NBT_Tag_Short : public NBT_Tag
 {
 	public:
+      const char *className() { return "Short"; }
 		  NBT_Tag_Short(bool named = true) : NBT_Tag(named, TAG_Short), number(0) {}
 		~NBT_Tag_Short() {}
 		

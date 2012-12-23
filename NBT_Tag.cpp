@@ -31,18 +31,19 @@ NBT_Tag::~NBT_Tag()
 
 const char *NBT_Tag::className()
 {
-	return typeid(this).name();
+	return typeid(this).name()+2;
 }
 
 std::string NBT_Tag::serialize()
 {
 	std::stringstream strstr;
-	if(named())
-		strstr << tagName;
-	else
-		strstr << this->className();
+   strstr << this->className();
 
-	strstr << "(" << this << ")";
+   if(named())
+      strstr << "(" << this << "; " << name() << ")";
+   else
+      strstr << "(" << this << ")";
+      
 	return strstr.str();
 }
 
