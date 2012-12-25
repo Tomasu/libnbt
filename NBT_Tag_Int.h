@@ -11,6 +11,7 @@ class NBT_Tag_Int : public NBT_Tag
 		~NBT_Tag_Int() {}
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		  int32_t value() { return number; }
 

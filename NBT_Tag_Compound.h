@@ -20,6 +20,7 @@ class NBT_Tag_Compound : public NBT_Tag
 		std::string serialize();
 
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		bool hasKey(const std::string &key);
 		

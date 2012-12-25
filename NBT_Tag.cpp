@@ -47,8 +47,11 @@ std::string NBT_Tag::serialize()
 	return strstr.str();
 }
 
+// TODO: change decode flow match encode...
 bool NBT_Tag::decodeTag(NBT_Buffer *buff)
 {
+	// having the read inside this if is only valid because we treat TAG_End specially in Tag_Compund
+	// a more "correct" way would be to read the type up here, then do our checking after..
 	if(tagNamed && tagType != TAG_End)
 	{
 		uint8_t readType = 0;
@@ -72,6 +75,26 @@ bool NBT_Tag::decodeTag(NBT_Buffer *buff)
 	}
 	
 	return true;
+}
+
+bool NBT_Tag::encode(NBT_Buffer *buff)
+{
+	if(!buff->write(tagType))
+	{
+		NBT_Error("failed to write tag type to buffer");
+		return false;
+	}
+	
+	if(tagNamed)
+	{
+		if(!buff->write(tagName))
+		{
+			NBT_Error("failed to write tag name to buffer");
+			return false;
+		}
+	}
+	
+	return encodeTag(buff);
 }
 
 NBT_Tag *NBT_Tag::tagFromType(uint8_t id, bool named)

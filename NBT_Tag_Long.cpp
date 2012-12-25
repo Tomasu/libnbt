@@ -12,3 +12,8 @@ bool NBT_Tag_Long::decodeTag(NBT_Buffer *buff)
 	
 	return true;
 }
+
+bool NBT_Tag_Long::encodeTag(NBT_Buffer *buff)
+{
+	return buff->writeLong(number);
+}

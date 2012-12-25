@@ -14,6 +14,7 @@ class NBT_Tag_String : public NBT_Tag
 		~NBT_Tag_String() { }
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		  const std::string &value() { return str; }
 

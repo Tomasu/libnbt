@@ -12,6 +12,7 @@ class NBT_Tag_Byte_Array : public NBT_Tag
 		const char *className() { return "Byte_Array"; }
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 	private:
 		int32_t size;

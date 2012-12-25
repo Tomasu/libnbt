@@ -11,3 +11,8 @@ bool NBT_Tag_String::decodeTag(NBT_Buffer *buff)
 	
 	return true;
 }
+
+bool NBT_Tag_String::encodeTag(NBT_Buffer *buff)
+{
+	return buff->write(str);
+}

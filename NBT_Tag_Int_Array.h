@@ -11,6 +11,7 @@ class NBT_Tag_Int_Array : public NBT_Tag
 		~NBT_Tag_Int_Array();
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 	private:
 		int32_t size;

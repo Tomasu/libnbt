@@ -12,3 +12,8 @@ bool NBT_Tag_Float::decodeTag(NBT_Buffer *buff)
 	
 	return true;
 }
+
+bool NBT_Tag_Float::encodeTag(NBT_Buffer *buff)
+{
+	return buff->writeFloat(number);
+}

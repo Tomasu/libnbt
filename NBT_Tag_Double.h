@@ -12,6 +12,7 @@ class NBT_Tag_Double : public NBT_Tag
 		~NBT_Tag_Double() {}
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		  double value() { return number; }
 

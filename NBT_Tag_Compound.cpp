@@ -114,6 +114,20 @@ bool NBT_Tag_Compound::decodeTag(NBT_Buffer *buff)
 	return true;
 }
 
+bool NBT_Tag_Compound::encodeTag(NBT_Buffer *buff)
+{
+	for(auto &child: children)
+	{
+		if(!child.second->encode(buff))
+		{
+			NBT_Error("failed to encode tag, bailing");
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 const std::vector<std::string> NBT_Tag_Compound::keys()
 {
 	std::vector<std::string> keys;

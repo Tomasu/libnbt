@@ -12,6 +12,7 @@ class NBT_Tag_Byte : public NBT_Tag
 		const char *className() { return "Byte"; }
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		  int8_t value() { return byte; }
 

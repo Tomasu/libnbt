@@ -12,3 +12,8 @@ bool NBT_Tag_Short::decodeTag(NBT_Buffer *buff)
 	
 	return true;
 }
+
+bool NBT_Tag_Short::encodeTag(NBT_Buffer *buff)
+{
+	return buff->writeShort(number);
+}

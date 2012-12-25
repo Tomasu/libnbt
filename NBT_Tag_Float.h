@@ -11,6 +11,7 @@ class NBT_Tag_Float : public NBT_Tag
 		~NBT_Tag_Float() {}
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		  float value() { return number; }
 

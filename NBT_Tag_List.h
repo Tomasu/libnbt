@@ -14,6 +14,7 @@ class NBT_Tag_List : public NBT_Tag
 		std::string serialize();
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		const std::vector<NBT_Tag *> &items() { return item_list; }
 

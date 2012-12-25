@@ -38,6 +38,9 @@ class NBT_Tag
 		
 		virtual bool decodeTag(NBT_Buffer *buff);
 		
+		bool encode(NBT_Buffer *buff);
+		virtual bool encodeTag(NBT_Buffer *buff) = 0;
+		
 		static NBT_Tag *tagFromType(uint8_t id, bool named = true);
 
 		static const char *tagNames[TAG_LAST_ITEM];

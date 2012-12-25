@@ -16,24 +16,25 @@ bool NBT::decode(void *data, int len)
 {
 	NBT_Debug("begin");
 	
+	bool ret = true;
+	
 	NBT_Buffer *buff = new NBT_Buffer(data, len);
-	if(!decodeTag(buff))
-		return false;
+	ret = decodeTag(buff);
 	
 	delete buff;
 
 	NBT_Debug("end");
 	
-	return true;
+	return ret;
 }
 
-bool NBT::encode(void *&data, int &len)
+bool NBT::encode(NBT_Buffer *buff)
 {
 	NBT_Debug("begin");
 
-
-
+	bool ret = encode(buff);
+	
 	NBT_Debug("end");
 
-	return true;
+	return ret;
 }

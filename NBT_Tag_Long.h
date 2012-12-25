@@ -11,6 +11,7 @@ class NBT_Tag_Long : public NBT_Tag
 		~NBT_Tag_Long() {}
 		
 		bool decodeTag(NBT_Buffer *buff);
+		bool encodeTag(NBT_Buffer *buff);
 		
 		  int64_t value() { return number; }
 

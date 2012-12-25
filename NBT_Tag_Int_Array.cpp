@@ -1,5 +1,6 @@
 #include "NBT_Tag_Int_Array.h"
 #include "NBT_Buffer.h"
+#include "NBT_Debug.h"
 
 NBT_Tag_Int_Array::~NBT_Tag_Int_Array()
 {
@@ -25,6 +26,26 @@ bool NBT_Tag_Int_Array::decodeTag(NBT_Buffer *buff)
 		if(!buff->readInt(&data[i]))
 		{
 			free(data);
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+bool NBT_Tag_Int_Array::encodeTag(NBT_Buffer *buff)
+{
+	if(!buff->writeInt(size))
+	{
+		NBT_Error("failed to write array size to buffer");
+		return false;
+	}
+	
+	for(int i = 0; i < size; i++)
+	{
+		if(!buff->writeInt(data[i]))
+		{
+			NBT_Error("failed to write array element [%i] to buffer", i);
 			return false;
 		}
 	}

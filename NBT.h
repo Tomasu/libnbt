@@ -5,6 +5,8 @@
 
 #include "NBT_Tag_Compound.h"
 
+class NBT_Buffer;
+
 class NBT : public NBT_Tag_Compound
 {
 	public:
@@ -12,7 +14,7 @@ class NBT : public NBT_Tag_Compound
 		~NBT();
 		
 		bool decode(void *data, int len);
-		bool encode(void *&data, int &len);
+		bool encode(NBT_Buffer *bulff);
 
 	private:
 

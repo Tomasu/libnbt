@@ -28,3 +28,11 @@ bool NBT_Tag_Byte_Array::decodeTag(NBT_Buffer *buff)
 	
 	return true;
 }
+
+bool NBT_Tag_Byte_Array::encodeTag(NBT_Buffer *buff)
+{
+	if(!buff->writeInt(size))
+		return false;
+	
+	return buff->write(data, size);
+}

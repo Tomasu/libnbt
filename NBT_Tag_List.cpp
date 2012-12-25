@@ -59,6 +59,32 @@ bool NBT_Tag_List::decodeTag(NBT_Buffer *buff)
 	return true;
 }
 
+bool NBT_Tag_List::encodeTag(NBT_Buffer *buff)
+{
+	if(!buff->write(itemType))
+	{
+		NBT_Error("failed to write list item type to buffer");
+		return false;
+	}
+	
+	if(!buff->writeInt(item_list.size()))
+	{
+		NBT_Error("failed to write list size to buffer");
+		return false;
+	}
+	
+	for(auto &item: item_list)
+	{
+		if(!item->encodeTag(buff))
+		{
+			NBT_Error("failed to encode tag to buffer");
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 std::string NBT_Tag_List::serialize()
 {
    std::stringstream str;
