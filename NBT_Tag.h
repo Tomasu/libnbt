@@ -20,7 +20,7 @@ enum NBT_Tag_Type
 	TAG_LAST_ITEM
 };
 
-class NBT_Buffer;
+class NBT_File;
 
 class NBT_Tag
 {
@@ -36,9 +36,9 @@ class NBT_Tag
 
 		virtual std::string serialize();
 		
-		virtual bool decodeTag(NBT_Buffer *buff);
+		virtual bool decodeTag(NBT_File *fh);
 		
-		bool encode(NBT_Buffer *buff);
+		bool encode(NBT_File *fh);
 		virtual bool encodeTag(NBT_Buffer *buff) = 0;
 		
 		static NBT_Tag *tagFromType(uint8_t id, bool named = true);

@@ -1,5 +1,5 @@
 #include "NBT_Tag.h"
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 
 #include "NBT_Tag_End.h"
 #include "NBT_Tag_Byte.h"
@@ -48,14 +48,14 @@ std::string NBT_Tag::serialize()
 }
 
 // TODO: change decode flow match encode...
-bool NBT_Tag::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag::decodeTag(NBT_File *fh)
 {
 	// having the read inside this if is only valid because we treat TAG_End specially in Tag_Compund
 	// a more "correct" way would be to read the type up here, then do our checking after..
 	if(tagNamed && tagType != TAG_End)
 	{
 		uint8_t readType = 0;
-		if(!buff->read(&readType))
+		if(!fh->read(&readType))
 			return false;
 		
 		if(readType != tagType)
@@ -64,7 +64,7 @@ bool NBT_Tag::decodeTag(NBT_Buffer *buff)
 			return false;
 		}
 		
-		if(!buff->read(&tagName))
+		if(!buff->read(tagName))
 			return false;
 		
 		NBT_Debug("%s(%i) %s", (tagType < TAG_LAST_ITEM) ? tagNames[tagType] : "UNKNOWN", tagType, tagName.c_str());
@@ -77,9 +77,9 @@ bool NBT_Tag::decodeTag(NBT_Buffer *buff)
 	return true;
 }
 
-bool NBT_Tag::encode(NBT_Buffer *buff)
+bool NBT_Tag::encode(NBT_File *fh)
 {
-	if(!buff->write(tagType))
+	if(!fh->write(tagType))
 	{
 		NBT_Error("failed to write tag type to buffer");
 		return false;
@@ -87,7 +87,7 @@ bool NBT_Tag::encode(NBT_Buffer *buff)
 	
 	if(tagNamed)
 	{
-		if(!buff->write(tagName))
+		if(!fh->write(tagName))
 		{
 			NBT_Error("failed to write tag name to buffer");
 			return false;

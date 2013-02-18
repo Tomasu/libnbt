@@ -12,27 +12,24 @@ NBT::~NBT()
 	
 }
 
-bool NBT::decode(void *data, int len)
+bool NBT::decode(NBT_File *fh)
 {
 	NBT_Debug("begin");
 	
 	bool ret = true;
-	
-	NBT_Buffer *buff = new NBT_Buffer(data, len);
-	ret = decodeTag(buff);
-	
-	delete buff;
+
+	ret = decodeTag(fh);
 
 	NBT_Debug("end");
 	
 	return ret;
 }
 
-bool NBT::encode(NBT_Buffer *buff)
+bool NBT::encode(NBT_File *fh)
 {
 	NBT_Debug("begin");
 
-	bool ret = encode(buff);
+	bool ret = encode(fh);
 	
 	NBT_Debug("end");
 
