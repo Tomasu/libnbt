@@ -6,17 +6,17 @@
 class NBT_Tag_Long : public NBT_Tag
 {
 	public:
-      const char *className() { return "Long"; }
-		  NBT_Tag_Long(bool named = true) : NBT_Tag(named, TAG_Long), number(0) {}
+		const char *className() { return "Long"; }
+		NBT_Tag_Long(bool named = true) : NBT_Tag(named, TAG_Long), number(0) {}
 		~NBT_Tag_Long() {}
 		
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
-		  int64_t value() { return number; }
+		int64_t value() { return number; }
 
 	private:
-		  int64_t number;
+		int64_t number;
 };
 
 #endif /* NBT_TAG_LONG_H_GUARD */

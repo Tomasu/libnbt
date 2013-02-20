@@ -11,8 +11,8 @@ class NBT_Tag_Double : public NBT_Tag
 		  NBT_Tag_Double(bool named = true) : NBT_Tag(named, TAG_Double), number(0.0) {}
 		~NBT_Tag_Double() {}
 		
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
 		  double value() { return number; }
 

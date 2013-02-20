@@ -11,10 +11,10 @@ class NBT_Tag_Byte : public NBT_Tag
 		
 		const char *className() { return "Byte"; }
 		
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
-		  int8_t value() { return byte; }
+		int8_t value() { return byte; }
 
 	private:
 		int8_t byte;

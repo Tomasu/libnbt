@@ -1,18 +1,12 @@
 #include "NBT_Tag_String.h"
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 
-bool NBT_Tag_String::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_String::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	 if(!buff->read(&str))
-		return false;
-	
-	return true;
+	return fh->read(str);
 }
 
-bool NBT_Tag_String::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_String::write(NBT_File *fh)
 {
-	return buff->write(str);
+	return fh->write(str);
 }

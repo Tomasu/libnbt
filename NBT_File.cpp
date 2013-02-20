@@ -1,20 +1,21 @@
 #include <zlib.h>
+#include <cassert>
 
 #include "NBT_File.h"
 #include "NBT_Debug.h"
 
 // a sector in a chunk is 4k, and zlib prefers larger buffers, so give a multiple of 4k
-#define INITIAL_BUFFER_SIZE (4096*4)
+#define INITIAL_BUFFER_SIZE (4096*8)
 
 NBT_File::NBT_File() :
-	readonly(true), append(false), compressedMode(false),
+	readonly(true), append(false), compressedMode(COMP_MODE_NONE),
 	fh(0), buffer(0), buffer_size(0), buffer_pos(0)
 {
 	
 }
 
 NBT_File::NBT_File(const std::string &filename, bool readonly, bool append) :
-	filename(filename), readonly(readonly), append(append), compressedMode(false),
+	filename(filename), readonly(readonly), append(append), compressedMode(COMP_MODE_NONE),
 	fh(0), buffer(0), buffer_size(0), buffer_pos(0)
 {
 	
@@ -22,48 +23,83 @@ NBT_File::NBT_File(const std::string &filename, bool readonly, bool append) :
 
 NBT_File::~NBT_File()
 {
-	
+	close();
 }
 
 bool NBT_File::open()
 {
+	if(!filename.length())
+		return false;
 	
+	return open(filename);
 }
 
 bool NBT_File::open(const std::string &filename)
 {
+	if(!filename.length())
+		return false;
 	
+	const char *mode = "r";
+	
+	if(!readonly)
+	{
+		if(append)
+			mode = "a+";
+		else
+			mode = "r+";
+	}
+	
+	fh = fopen(filename.c_str(), mode);
+	if(!fh)
+		return false;
+	
+	// ask stdio to buffer a bunch of data for us
+	// should speed up reading, and we don't have to handle it ourselves!
+	setvbuf(fh, 0, _IOFBF, 1024*1024*4); // 4MB!
+	
+	return true;
 }
 
 void NBT_File::close()
 {
+	if(buffer)
+		free(buffer);
+
+	buffer_size = 0;
+	buffer = 0;
 	
+	if(fh)
+		fclose(fh);
+	
+	fh = 0;
 }
 
-bool NBT_File::readCompressedMode(int length)
+bool NBT_File::readCompressedMode(uint32_t length)
 {
 	if(compressedMode)
 		return false;
 	
 	// read compressed data into buffer
-	uint8_t *compressedData = malloc(length);
+	uint8_t *compressedData = (uint8_t*)malloc(length);
 	if(!compressedData)
 		return false;
 	
 	uint32_t ret = fread(compressedData, 1, length, fh);
 	if(ret != length)
+	{
+		free(compressedData);
 		return false;
+	}
 	
-	z_stream strm = {
-		.zalloc = Z_NULL,
-		.zfree = Z_NULL,
-		.opaque = Z_NULL,
-		.avail_in = 0,
-		.next_in = 0
-	};
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = 0;
 	
-	int ret = inflateInit(&strm);
-	if(ret != Z_OK)
+	int zret = inflateInit(&strm);
+	if(zret != Z_OK)
 	{
 		NBT_Error("failed to initialize zlib");
 		return false;
@@ -72,7 +108,7 @@ bool NBT_File::readCompressedMode(int length)
 	if(buffer_size < INITIAL_BUFFER_SIZE)
 		buffer_size = INITIAL_BUFFER_SIZE;
 	
-	buffer = realloc(buffer, buffer_size);
+	buffer = (uint8_t*)realloc(buffer, buffer_size);
 	if(!buffer)
 	{
 		NBT_Error("failed to allocate dest buffer");
@@ -88,14 +124,15 @@ bool NBT_File::readCompressedMode(int length)
 	
 	do {
 		bool force_resize = true;
+		//NBT_Debug("buffer_len: %i, buffer_size: %i", buffer_len, buffer_size);
 		
 		strm.avail_out = buffer_size - buffer_len;
 		strm.next_out = buffer + buffer_len;
 		
-		ret = inflate(&strm, Z_NO_FLUSH);
-		assert(ret != Z_STREAM_ERROR);
+		zret = inflate(&strm, Z_SYNC_FLUSH);
+		assert(zret != Z_STREAM_ERROR);
 		
-		switch(ret)
+		switch(zret)
 		{
 			case Z_NEED_DICT:
 				ret = Z_DATA_ERROR;
@@ -106,7 +143,7 @@ bool NBT_File::readCompressedMode(int length)
 				return false;
 		}
 		
-		if(ret != Z_BUF_ERROR)
+		if(zret != Z_BUF_ERROR)
 		{
 			// we had enough space in the buffer, so data was read into it
 			// add the amount read into our buffer to our buffer_len variable.
@@ -114,13 +151,13 @@ bool NBT_File::readCompressedMode(int length)
 			force_resize = false;
 		}
 
-		if(force_resize || buffer_len + INITIAL_BUFFER_SIZE < buffer_size)
+		if(force_resize/* || buffer_len + INITIAL_BUFFER_SIZE > buffer_size*/)
 		{
 			uint32_t tmp_size = npot(buffer_size);
 			uint8_t *tmp = (uint8_t *)realloc(buffer, tmp_size);
 			if(!tmp)
 			{
-				NBT_Error("failed to allocate memory for decompressed data");
+				NBT_Error("failed to allocate memory (%i bytes) for decompressed data", tmp_size);
 				(void)inflateEnd(&strm);
 				return false;
 			}
@@ -129,10 +166,14 @@ bool NBT_File::readCompressedMode(int length)
 			buffer = tmp;
 		}
 		
+		//NBT_Debug("decompress avail_in: %i, avail_out: %i", strm.avail_in, strm.avail_out);
 	} while(strm.avail_out == 0);
 	
 	inflateEnd(&strm);
 	
+	free(compressedData);
+	
+	//NBT_Debug("got %i bytes of uncompressed data", buffer_len);
 	compressedMode = COMP_MODE_READ;
 	
 	return true;
@@ -147,7 +188,7 @@ bool NBT_File::writeCompressedMode()
 	
 	if(!buffer || buffer_size < INITIAL_BUFFER_SIZE)
 	{
-		buffer = realloc(buffer, INITIAL_BUFFER_SIZE);
+		buffer = (uint8_t*)realloc(buffer, INITIAL_BUFFER_SIZE);
 		if(!buffer)
 		{
 			NBT_Error("failed to allocate memory for compression buffer");
@@ -163,7 +204,10 @@ bool NBT_File::writeCompressedMode()
 bool NBT_File::endCompressedMode()
 {
 	if(!compressedMode)
+	{
+		NBT_Error("can't end compressed mode if we're not in compressed mode");
 		return false;
+	}
 	
 	bool ret = false;
 	
@@ -190,15 +234,14 @@ bool NBT_File::endCompressedMode()
 
 bool NBT_File::writeCompressedData()
 {
-	z_stream strm = {
-		.zalloc = Z_NULL,
-		.zfree = Z_NULL,
-		.opaque = Z_NULL,
-		.avail_in = buffer_size,
-		.next_in = buffer
-	};
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = buffer_size;
+	strm.next_in = buffer;
 	
-	int ret = deflateInit(&strm);
+	int ret = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
 	if(ret != Z_OK)
 	{
 		NBT_Error("failed to initialize zlib for compression");
@@ -208,7 +251,7 @@ bool NBT_File::writeCompressedData()
 	uint32_t pos = 0;
 	uint32_t comp_buffer_size = INITIAL_BUFFER_SIZE;
 	uint32_t comp_buffer_len = 0;
-	uint8_t *comp_buffer = realloc(0, comp_buffer_size);
+	uint8_t *comp_buffer = (uint8_t*)realloc(0, comp_buffer_size);
 	if(!comp_buffer)
 	{
 		NBT_Error("failed to allocate memory for compressed buffer");
@@ -292,7 +335,7 @@ bool NBT_File::writeCompressedData()
 	return true;
 }
 
-bool NBT_File::seek(int64_t offset, int whence = SEEK_SET)
+bool NBT_File::seek(int64_t offset, int whence)
 {
 	if(compressedMode)
 	{

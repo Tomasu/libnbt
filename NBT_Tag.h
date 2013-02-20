@@ -5,6 +5,7 @@
 
 enum NBT_Tag_Type
 {
+	TAG_UNKNOWN = -1,
 	TAG_End = 0,
 	TAG_Byte,
 	TAG_Short,
@@ -35,14 +36,24 @@ class NBT_Tag
 		const std::string &name() { return tagName; }
 
 		virtual std::string serialize();
-		
-		virtual bool decodeTag(NBT_File *fh);
-		
-		bool encode(NBT_File *fh);
-		virtual bool encodeTag(NBT_Buffer *buff) = 0;
-		
+
+		// create a new tag from the given tag type
+		// doesn't do any file reading
 		static NBT_Tag *tagFromType(uint8_t id, bool named = true);
 
+		// read tag from NBT_File, named or unnamed
+		static NBT_Tag *readTag(NBT_File *fh, bool named = true);
+		
+		// read tag specific data from NBT_File
+		virtual bool read(NBT_File *fh) = 0;
+		
+		// write tag to NBT_File
+		bool writeTag(NBT_File *fh);
+		
+		// write tag specific data to NBT_File
+		virtual bool write(NBT_File *fh) = 0;
+
+		
 		static const char *tagNames[TAG_LAST_ITEM];
 	private:
 		uint8_t tagType;

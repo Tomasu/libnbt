@@ -13,8 +13,8 @@ class NBT : public NBT_Tag_Compound
 		NBT();
 		~NBT();
 		
-		bool decode(NBT_File *fh);
-		bool encode(NBT_File *fh);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 
 	private:
 

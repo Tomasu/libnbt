@@ -26,7 +26,7 @@ NBT_Tag::NBT_Tag(bool named, int t) : tagType(t), tagNamed(named)
 
 NBT_Tag::~NBT_Tag()
 {
-	
+	//NBT_Debug("delete %s \"%s\"", tagNames[tagType], tagName.c_str());
 }
 
 const char *NBT_Tag::className()
@@ -47,41 +47,11 @@ std::string NBT_Tag::serialize()
 	return strstr.str();
 }
 
-// TODO: change decode flow match encode...
-bool NBT_Tag::decodeTag(NBT_File *fh)
-{
-	// having the read inside this if is only valid because we treat TAG_End specially in Tag_Compund
-	// a more "correct" way would be to read the type up here, then do our checking after..
-	if(tagNamed && tagType != TAG_End)
-	{
-		uint8_t readType = 0;
-		if(!fh->read(&readType))
-			return false;
-		
-		if(readType != tagType)
-		{
-			NBT_Debug("read the wrong type from data >:(");
-			return false;
-		}
-		
-		if(!buff->read(tagName))
-			return false;
-		
-		NBT_Debug("%s(%i) %s", (tagType < TAG_LAST_ITEM) ? tagNames[tagType] : "UNKNOWN", tagType, tagName.c_str());
-	}
-	else
-	{
-		//NBT_Debug("%s(%i) %s ALT", (tagType < TAG_LAST_ITEM) ? tagNames[tagType] : "UNKNOWN", tagType, tagName.c_str());
-	}
-	
-	return true;
-}
-
-bool NBT_Tag::encode(NBT_File *fh)
-{
+bool NBT_Tag::writeTag(NBT_File *fh)
+{	
 	if(!fh->write(tagType))
 	{
-		NBT_Error("failed to write tag type to buffer");
+		NBT_Error("failed to write tag type");
 		return false;
 	}
 	
@@ -89,12 +59,56 @@ bool NBT_Tag::encode(NBT_File *fh)
 	{
 		if(!fh->write(tagName))
 		{
-			NBT_Error("failed to write tag name to buffer");
+			NBT_Error("failed to write tag name");
 			return false;
 		}
 	}
 	
-	return encodeTag(buff);
+	return write(fh);
+}
+
+NBT_Tag *NBT_Tag::readTag(NBT_File *fh, bool named)
+{
+	//NBT_Debug("begin");
+	
+	NBT_Tag *tag = 0;
+	
+	uint8_t tagType = TAG_UNKNOWN;
+	
+	if(!fh->read(&tagType))
+	{
+		NBT_Error("failed to read tag type :(");
+		return 0;
+	}
+
+	tag = tagFromType(tagType, named);
+	if(!tag)
+	{
+		NBT_Error("failed to create tag from type %i", tagType);
+		return 0;
+	}
+	
+	// don't read in name if we're an unnamed tag
+	// TAG_End is special, it is never named
+	if(named && tagType != TAG_End)
+	{
+		if(!fh->read(tag->tagName))
+		{
+			NBT_Error("failed to read tag name :(");
+			delete tag;
+			return 0;
+		}
+	}
+	
+	if(!tag->read(fh))
+	{
+		NBT_Error("failed to read tag specifics");
+		delete tag;
+		return 0;
+	}
+	
+	//NBT_Debug("end");
+	return tag;
 }
 
 NBT_Tag *NBT_Tag::tagFromType(uint8_t id, bool named)
@@ -152,9 +166,11 @@ NBT_Tag *NBT_Tag::tagFromType(uint8_t id, bool named)
 			break;
 			
 		default:
-			NBT_Error("unkown sub tag type (%i) >:(", id);
+			NBT_Error("unkown tag type (%i) >:(", id);
 			return 0;
 	}
+	
+	//NBT_Debug("new tag from type: %s", tagNames[id]);
 	
 	return tag;
 }

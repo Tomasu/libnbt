@@ -1,19 +1,13 @@
 #include "NBT_Tag_Double.h"
 
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 
-bool NBT_Tag_Double::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Double::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	 if(!buff->readDouble(&number))
-		return false;
-	
-	return true;
+	return fh->read(&number);
 }
 
-bool NBT_Tag_Double::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Double::write(NBT_File *fh)
 {
-	return buff->writeDouble(number);
+	return fh->write(number);
 }

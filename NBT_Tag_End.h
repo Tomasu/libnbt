@@ -8,7 +8,8 @@ class NBT_Tag_End : public NBT_Tag
 	public:
       const char *className() { return "End"; }
 		NBT_Tag_End(bool named = false) : NBT_Tag(named, TAG_End) { }
-		bool encodeTag(NBT_Buffer *buff) { (void)buff; return true; }
+		bool write(NBT_File *fh) { (void)fh; return true; }
+		bool read(NBT_File *fh) { (void)fh; return true; }
 		~NBT_Tag_End() { }
 };
 

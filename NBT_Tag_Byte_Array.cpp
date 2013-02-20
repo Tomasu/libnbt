@@ -1,5 +1,5 @@
 #include "NBT_Tag_Byte_Array.h"
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 
 NBT_Tag_Byte_Array::~NBT_Tag_Byte_Array()
 {
@@ -10,17 +10,14 @@ NBT_Tag_Byte_Array::~NBT_Tag_Byte_Array()
 	size = 0;
 }
 
-bool NBT_Tag_Byte_Array::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Byte_Array::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	if(!buff->readInt(&size))
+	if(!fh->read(&size))
 		return false;
 	
 	data = (uint8_t *)malloc(size);
 	
-	if(!buff->read(data, size))
+	if(!fh->read(data, size))
 	{
 		free(data);
 		return false;
@@ -29,10 +26,10 @@ bool NBT_Tag_Byte_Array::decodeTag(NBT_Buffer *buff)
 	return true;
 }
 
-bool NBT_Tag_Byte_Array::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Byte_Array::write(NBT_File *fh)
 {
-	if(!buff->writeInt(size))
+	if(!fh->write(size))
 		return false;
 	
-	return buff->write(data, size);
+	return fh->write(data, size);
 }

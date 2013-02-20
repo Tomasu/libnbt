@@ -4,8 +4,8 @@ project(nbt CXX)
 
 add_library(nbt SHARED
 	NBT.cpp
-	NBT_Buffer.cpp
 	NBT_Debug.cpp
+	NBT_File.cpp
 	NBT_Tag.cpp
 	NBT_Tag_Byte.cpp
 	NBT_Tag_Byte_Array.cpp

@@ -1,19 +1,13 @@
 #include "NBT_Tag_Short.h"
 
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 
-bool NBT_Tag_Short::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Short::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	 if(!buff->readShort(&number))
-		return false;
-	
-	return true;
+	return fh->read(&number);
 }
 
-bool NBT_Tag_Short::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Short::write(NBT_File *fh)
 {
-	return buff->writeShort(number);
+	return fh->write(number);
 }

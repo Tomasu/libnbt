@@ -19,8 +19,8 @@ class NBT_Tag_Compound : public NBT_Tag
 		~NBT_Tag_Compound();
 		std::string serialize();
 
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
 		bool hasKey(const std::string &key);
 		

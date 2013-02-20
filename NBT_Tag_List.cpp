@@ -1,5 +1,5 @@
 #include "NBT_Tag_List.h"
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 #include "NBT_Debug.h"
 
 #include <sstream>
@@ -17,30 +17,34 @@ NBT_Tag_List::~NBT_Tag_List()
 	 item_list.clear();
 }
 
-bool NBT_Tag_List::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_List::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	if(!buff->read(&itemType))
+	if(!fh->read(&itemType))
 		return false;
 	
 	int32_t count = 0;
 	
-	if(!buff->readInt(&count))
+	if(!fh->read(&count))
 		return false;
 	
-	NBT_Debug("List \"%s\" (%s) begin (%i)", name().c_str(), itemType < TAG_LAST_ITEM ? NBT_Tag::tagNames[itemType] : "UNKNOWN", count);
-	
+	//NBT_Debug("List \"%s\" (%s) begin (%i)", name().c_str(), itemType < TAG_LAST_ITEM ? NBT_Tag::tagNames[itemType] : "UNKNOWN", count);
 	
 	for(int i = 0; i < count; i++)
 	{
 		NBT_Tag *tag = tagFromType(itemType, false);
 		if(!tag)
+		{
+			NBT_Warn("failed to create tag for tag list");
+			delete tag;
 			break;
+		}
 		
-		if(!tag->decodeTag(buff))
+		if(!tag->read(fh))
+		{
+			NBT_Warn("failed to read tag from tag list");
+			delete tag;
 			break;
+		}
 		
 		item_list.push_back(tag);
 	}
@@ -54,20 +58,20 @@ bool NBT_Tag_List::decodeTag(NBT_Buffer *buff)
 		return false;
 	}
 	
-	NBT_Debug("List \"%s\" (%s) end (%i)", name().c_str(), itemType < TAG_LAST_ITEM ? NBT_Tag::tagNames[itemType] : "UNKNOWN", count);
+	//NBT_Debug("List \"%s\" (%s) end (%i)", name().c_str(), itemType < TAG_LAST_ITEM ? NBT_Tag::tagNames[itemType] : "UNKNOWN", count);
 	
 	return true;
 }
 
-bool NBT_Tag_List::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_List::write(NBT_File *fh)
 {
-	if(!buff->write(itemType))
+	if(!fh->write(itemType))
 	{
 		NBT_Error("failed to write list item type to buffer");
 		return false;
 	}
 	
-	if(!buff->writeInt(item_list.size()))
+	if(!fh->write(item_list.size()))
 	{
 		NBT_Error("failed to write list size to buffer");
 		return false;
@@ -75,7 +79,7 @@ bool NBT_Tag_List::encodeTag(NBT_Buffer *buff)
 	
 	for(auto &item: item_list)
 	{
-		if(!item->encodeTag(buff))
+		if(!item->write(fh))
 		{
 			NBT_Error("failed to encode tag to buffer");
 			return false;

@@ -10,13 +10,13 @@ class NBT_Tag_Int : public NBT_Tag
 		  NBT_Tag_Int(bool named = true) : NBT_Tag(named, TAG_Int), number(0.0) {}
 		~NBT_Tag_Int() {}
 		
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
-		  int32_t value() { return number; }
+		int32_t value() { return number; }
 
 	private:
-		  int32_t number;
+		int32_t number;
 };
 
 #endif /* NBT_TAG_INT_H_GUARD */

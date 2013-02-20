@@ -1,5 +1,5 @@
 #include "NBT_Tag_Int_Array.h"
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 #include "NBT_Debug.h"
 
 NBT_Tag_Int_Array::~NBT_Tag_Int_Array()
@@ -11,19 +11,16 @@ NBT_Tag_Int_Array::~NBT_Tag_Int_Array()
 	 size = 0;
 }
 
-bool NBT_Tag_Int_Array::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Int_Array::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	if(!buff->readInt(&size))
+	if(!fh->read(&size))
 		return false;
 	
 	data = (int32_t *)malloc(size * sizeof(uint32_t));
 	
 	for(int i = 0; i < size; i++)
 	{
-		if(!buff->readInt(&data[i]))
+		if(!fh->read(&data[i]))
 		{
 			free(data);
 			return false;
@@ -33,19 +30,19 @@ bool NBT_Tag_Int_Array::decodeTag(NBT_Buffer *buff)
 	return true;
 }
 
-bool NBT_Tag_Int_Array::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Int_Array::write(NBT_File *fh)
 {
-	if(!buff->writeInt(size))
+	if(!fh->write(size))
 	{
-		NBT_Error("failed to write array size to buffer");
+		NBT_Error("failed to write array size");
 		return false;
 	}
 	
 	for(int i = 0; i < size; i++)
 	{
-		if(!buff->writeInt(data[i]))
+		if(!fh->write(data[i]))
 		{
-			NBT_Error("failed to write array element [%i] to buffer", i);
+			NBT_Error("failed to write array element [%i]", i);
 			return false;
 		}
 	}

@@ -1,6 +1,6 @@
 #include "NBT_Tag_Compound.h"
 
-#include "NBT_Buffer.h"
+#include "NBT_File.h"
 
 #include "NBT_Tag_End.h"
 #include "NBT_Tag_Byte.h"
@@ -27,9 +27,9 @@ NBT_Tag_Compound::NBT_Tag_Compound(bool named) : NBT_Tag(named, TAG_Compound)
 NBT_Tag_Compound::~NBT_Tag_Compound()
 {
 	for(auto &child: children)
-	 {
-			delete child.second;
-	 }
+	{
+		delete child.second;
+	}
 		
 	children.clear();
 }
@@ -62,37 +62,23 @@ std::string NBT_Tag_Compound::serialize()
 	return str.str();
 }
 
-bool NBT_Tag_Compound::decodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Compound::read(NBT_File *fh)
 {
-	if(!NBT_Tag::decodeTag(buff))
-		return false;
-	
-	NBT_Debug("Compound \"%s\" begin", name().c_str());
+	//NBT_Debug("Compound \"%s\" begin", name().c_str());
 	
 	NBT_Tag *tag = 0;
 	
 	do {
-		uint8_t id = 0;
-		if(!buff->peek(&id))
-		{
-			NBT_Error("failed to load tag in compound tag");
-			break;
-		}
-
-		tag = tagFromType(id);
+		tag = readTag(fh);
 		if(!tag)
-			break;
-		
-		if(id == TAG_End) // skip tag end
-			break;
-
-		if(!tag->decodeTag(buff))
 		{
-			NBT_Error("failed to load tag in compound tag");
+			NBT_Error("bah.");
 			break;
 		}
-
-		children.insert(std::pair<std::string,NBT_Tag*>(tag->name(), tag));
+		
+		//NBT_Debug("read tag: %s %s", tagNames[tag->type()], tag->name().c_str());
+		//if(tag->type() != TAG_End)
+			children.insert(std::pair<std::string,NBT_Tag*>(tag->name(), tag));
 		
 	} while(tag->type() != TAG_End);
 	
@@ -110,15 +96,15 @@ bool NBT_Tag_Compound::decodeTag(NBT_Buffer *buff)
 		return false;
 	}
 	
-	NBT_Debug("Compound \"%s\" end", name().c_str());
+	//NBT_Debug("Compound \"%s\" end", name().c_str());
 	return true;
 }
 
-bool NBT_Tag_Compound::encodeTag(NBT_Buffer *buff)
+bool NBT_Tag_Compound::write(NBT_File *fh)
 {
 	for(auto &child: children)
 	{
-		if(!child.second->encode(buff))
+		if(!child.second->writeTag(fh))
 		{
 			NBT_Error("failed to encode tag, bailing");
 			return false;

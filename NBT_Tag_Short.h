@@ -12,13 +12,13 @@ class NBT_Tag_Short : public NBT_Tag
 		NBT_Tag_Short(bool named = true) : NBT_Tag(named, TAG_Short), number(0) {}
 		~NBT_Tag_Short() {}
 		
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
 		int16_t value() { return number; }
 
 	private:
-		  int16_t number;
+		int16_t number;
 };
 
 #endif /* NBT_TAG_SHORT_H_GUARD */

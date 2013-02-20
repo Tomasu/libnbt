@@ -13,13 +13,13 @@ class NBT_Tag_String : public NBT_Tag
 		NBT_Tag_String(bool named = true) : NBT_Tag(named, TAG_String) { }
 		~NBT_Tag_String() { }
 		
-		bool decodeTag(NBT_Buffer *buff);
-		bool encodeTag(NBT_Buffer *buff);
+		bool read(NBT_File *fh);
+		bool write(NBT_File *fh);
 		
-		  const std::string &value() { return str; }
+		const std::string &value() { return str; }
 
 	private:
-		  std::string str;
+		std::string str;
 };
 
 #endif /* NBT_TAG_STRING_H_GUARD */
