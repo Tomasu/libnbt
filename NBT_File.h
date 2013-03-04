@@ -12,7 +12,7 @@ class NBT_File
 {
    public:
       NBT_File();
-      NBT_File(const std::string &filename, bool readonly = false, bool append = false);
+      NBT_File(const std::string &filename, bool readonly = true, bool append = false);
       ~NBT_File();
       
       bool open();
@@ -24,6 +24,7 @@ class NBT_File
 		bool writeCompressedMode();
 		
 		bool endCompressedMode();
+		bool clearCompressedMode();
 		
       bool seek(int64_t offset, int whence = SEEK_SET);
       uint32_t tell()
@@ -40,6 +41,7 @@ class NBT_File
 		bool read(uint8_t *out, uint32_t len = 1);
 		bool read(uint16_t *out);
 		bool read(uint32_t *out);
+		bool read(uint32_t *out, uint32_t len);
 		bool read(uint64_t *out);
 		bool read(int8_t *out, uint32_t len = 1) { return read((uint8_t*)out, len); }
 		bool read(int16_t *out) { return read((uint16_t*)out); }
@@ -62,6 +64,7 @@ class NBT_File
 		bool write(uint8_t in);
 		bool write(uint16_t in);
 		bool write(uint32_t in);
+		bool write(uint32_t *in, uint32_t len);
 		bool write(uint64_t in);
 		
 		bool write(int8_t *in, uint32_t len = 1) { return write((uint8_t*)in, len); }
@@ -167,6 +170,18 @@ inline bool NBT_File::read(uint32_t *out)
 	return true;
 }
 
+inline bool NBT_File::read(uint32_t *out, uint32_t len)
+{
+	bool ret = true;
+	
+	for(uint32_t i = 0; i < len && ret != false; i++)
+	{
+		ret = read(out+i);
+	}
+	
+	return ret;
+}
+
 inline bool NBT_File::read(uint64_t *out)
 {
 	uint8_t tmp[sizeof(*out)];
@@ -224,6 +239,7 @@ inline bool NBT_File::write(uint8_t *in, uint32_t len)
 {
 	if(compressedMode)
 	{
+		//NBT_Debug("writing %i bytes", len);
 		if(ensureSize(len))
 		{
 			memcpy(buffer + buffer_pos, in, len);
@@ -246,6 +262,7 @@ inline bool NBT_File::write(uint8_t *in, uint32_t len)
 
 inline bool NBT_File::write(uint8_t in)
 {
+	//NBT_Debug("write char: %u", in);
 	return write(&in, 1);
 }
 
@@ -263,12 +280,25 @@ inline bool NBT_File::write(uint32_t in)
 {
 	uint8_t tmp[sizeof(in)], *ptr = (uint8_t *)&in;
 	
+	//NBT_Debug("write int: %u", in);
 	tmp[0] = ptr[3];
 	tmp[1] = ptr[2];
 	tmp[2] = ptr[1];
 	tmp[3] = ptr[0];
 	
 	return write(tmp, sizeof(tmp));
+}
+
+inline bool NBT_File::write(uint32_t *in, uint32_t len)
+{
+	bool ret = true;
+	
+	for(uint32_t i = 0; i < len && ret != false; i++)
+	{
+		ret = write(in[i]);
+	}
+	
+	return ret;
 }
 
 inline bool NBT_File::write(uint64_t in)

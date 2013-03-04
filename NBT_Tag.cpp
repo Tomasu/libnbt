@@ -57,11 +57,17 @@ bool NBT_Tag::writeTag(NBT_File *fh)
 	
 	if(tagNamed)
 	{
+		//NBT_Debug("writing %s %s", NBT_Tag::tagNames[tagType], tagName.c_str());
+		
 		if(!fh->write(tagName))
 		{
 			NBT_Error("failed to write tag name");
 			return false;
 		}
+	}
+	else
+	{
+		//NBT_Debug("writing %s", NBT_Tag::tagNames[tagType]);
 	}
 	
 	return write(fh);

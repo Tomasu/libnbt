@@ -1,5 +1,6 @@
 #include <zlib.h>
 #include <cassert>
+#include <cerrno>
 
 #include "NBT_File.h"
 #include "NBT_Debug.h"
@@ -51,8 +52,18 @@ bool NBT_File::open(const std::string &filename)
 	
 	fh = fopen(filename.c_str(), mode);
 	if(!fh)
-		return false;
-	
+	{
+		if(errno == ENOENT)
+		{
+			fh = fopen(filename.c_str(), "w");
+		}
+		
+		if(!fh)
+		{
+			NBT_Error("failed to open %s as %s: %s", filename.c_str(), mode, strerror(errno));
+			return false;
+		}
+	}
 	// ask stdio to buffer a bunch of data for us
 	// should speed up reading, and we don't have to handle it ourselves!
 	setvbuf(fh, 0, _IOFBF, 1024*1024*4); // 4MB!
@@ -78,6 +89,8 @@ bool NBT_File::readCompressedMode(uint32_t length)
 {
 	if(compressedMode)
 		return false;
+	
+	NBT_Debug("begin length: %i", length);
 	
 	// read compressed data into buffer
 	uint8_t *compressedData = (uint8_t*)malloc(length);
@@ -176,6 +189,8 @@ bool NBT_File::readCompressedMode(uint32_t length)
 	//NBT_Debug("got %i bytes of uncompressed data", buffer_len);
 	compressedMode = COMP_MODE_READ;
 	
+	NBT_Debug("end");
+	
 	return true;
 }
 
@@ -183,6 +198,8 @@ bool NBT_File::writeCompressedMode()
 {
 	if(compressedMode)
 		return false;
+	
+	NBT_Debug("begin");
 	
 	buffer_len = 0;
 	
@@ -198,6 +215,24 @@ bool NBT_File::writeCompressedMode()
 		
 	compressedMode = COMP_MODE_WRITE;
 	
+	NBT_Debug("end");
+	
+	return true;
+}
+
+bool NBT_File::clearCompressedMode()
+{
+	if(!compressedMode)
+	{
+		NBT_Error("can't clear compressed mode if we're not in compressed mode");
+		return false;
+	}
+
+	NBT_Debug("");
+	compressedMode = COMP_MODE_NONE;
+	buffer_len = 0;
+	buffer_pos = 0;
+	
 	return true;
 }
 
@@ -208,6 +243,8 @@ bool NBT_File::endCompressedMode()
 		NBT_Error("can't end compressed mode if we're not in compressed mode");
 		return false;
 	}
+	
+	NBT_Debug("begin");
 	
 	bool ret = false;
 	
@@ -229,6 +266,7 @@ bool NBT_File::endCompressedMode()
 	buffer_len = 0;
 	buffer_pos = 0;
 	
+	NBT_Debug("end");
 	return ret;
 }
 
@@ -238,8 +276,10 @@ bool NBT_File::writeCompressedData()
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
-	strm.avail_in = buffer_size;
+	strm.avail_in = buffer_pos;
 	strm.next_in = buffer;
+	
+	NBT_Debug("write compressed data: %i bytes", buffer_pos);
 	
 	int ret = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
 	if(ret != Z_OK)
@@ -258,14 +298,20 @@ bool NBT_File::writeCompressedData()
 		return false;
 	}
 	
+	compressedMode = COMP_MODE_NONE;
+	buffer_len = 0;
+	buffer_pos = 0;
+	
 	do {
 		bool force_resize = true;
 		
-		strm.avail_out = comp_buffer_len - pos;
-		strm.next_out = comp_buffer + pos;
+		strm.avail_out = comp_buffer_size - comp_buffer_len;
+		strm.next_out = comp_buffer + comp_buffer_len;
 		
 		ret = deflate(&strm, Z_FINISH);
 		assert(ret != Z_STREAM_ERROR);
+		
+		NBT_Debug("avail_in: %i, avail_out: %i, pos: %i", strm.avail_in, strm.avail_out, pos);
 		
 		switch(ret)
 		{
@@ -281,17 +327,19 @@ bool NBT_File::writeCompressedData()
 		
 		if(ret != Z_BUF_ERROR)
 		{
-			comp_buffer_len += (comp_buffer_size - comp_buffer_len) - strm.avail_out;
+			NBT_Debug("extending comp buffer pos from %i to %i", comp_buffer_len, (comp_buffer_size - comp_buffer_len) - strm.avail_out);
+			comp_buffer_len += comp_buffer_size - strm.avail_out;
 			force_resize = false;
 		}
 		
 		if(force_resize || comp_buffer_len + INITIAL_BUFFER_SIZE < comp_buffer_size)
 		{
 			uint32_t tmp_size = npot(comp_buffer_size);
+			NBT_Debug("comp size: %u, tmp size: %u %i", comp_buffer_size, tmp_size, ret == Z_BUF_ERROR);
 			uint8_t *tmp = (uint8_t *)realloc(comp_buffer, tmp_size);
 			if(!tmp)
 			{
-				NBT_Error("failed to allocate memory for compressed data");
+				NBT_Error("failed to allocate memory (%i/%u) for compressed data", tmp_size, comp_buffer_size);
 				deflateEnd(&strm);
 				free(comp_buffer);
 				return false;
@@ -305,16 +353,16 @@ bool NBT_File::writeCompressedData()
 	
 	deflateEnd(&strm);
 	
-	// compression should be done here.
-	
-	if(!write(comp_buffer_len))
+	uint32_t tmp_len = comp_buffer_len+1;
+	NBT_Debug("writing chunk len: %i", tmp_len);
+	if(!write(tmp_len))
 	{
 		free(comp_buffer);
 		NBT_Error("failed to write compressed data length to file");
 		return false;
 	}
 	
-	if(!write((uint8_t)1)) // force specific override
+	if(!write((uint8_t)2)) // force specific override
 	{
 		free(comp_buffer);
 		NBT_Error("failed to write out compressed data type to file");
@@ -328,9 +376,9 @@ bool NBT_File::writeCompressedData()
 		return false;
 	}
 	
-	compressedMode = COMP_MODE_NONE;
-	buffer_len = 0;
-	buffer_pos = 0;
+	NBT_Debug("compressed %i bytes to %i bytes", buffer_pos, comp_buffer_len);
+	
+	free(comp_buffer);
 	
 	return true;
 }
@@ -361,6 +409,7 @@ bool NBT_File::seek(int64_t offset, int whence)
 		return true;
 	}
 	
+	NBT_Debug("seeking to: %i", offset);
 	if(fseek(fh, offset, whence) == 0)
 		return true;
 	
@@ -383,6 +432,7 @@ bool NBT_File::ensureSize(int32_t len)
 		if(new_size < 4096)
 			new_size = 4096;
 		
+		NBT_Debug("extending buffer from %i bytes to %i bytes (pos:%i)", buffer_size, new_size, buffer_pos);
 		uint8_t *new_buffer = (uint8_t *)realloc(buffer, new_size);
 		if(!new_buffer)
 			return false;
