@@ -13,9 +13,12 @@ class NBT_Tag_Int_Array : public NBT_Tag
 		bool read(NBT_File *fh);
 		bool write(NBT_File *fh);
 		
+		int32_t *data() { return data_; }
+
+		void setData(int32_t size, int32_t *data);
 	private:
 		int32_t size;
-		int32_t *data;
+		int32_t *data_;
 	
 };
 

@@ -77,6 +77,8 @@ void NBT_File::close()
 		free(buffer);
 
 	buffer_size = 0;
+	buffer_pos = 0;
+	buffer_len = 0;
 	buffer = 0;
 	
 	if(fh)
@@ -85,12 +87,12 @@ void NBT_File::close()
 	fh = 0;
 }
 
-bool NBT_File::readCompressedMode(uint32_t length)
+bool NBT_File::readCompressedMode(uint32_t length, bool gzip)
 {
 	if(compressedMode)
 		return false;
 	
-	NBT_Debug("begin length: %i", length);
+	//NBT_Debug("begin length: %i", length);
 	
 	// read compressed data into buffer
 	uint8_t *compressedData = (uint8_t*)malloc(length);
@@ -111,7 +113,12 @@ bool NBT_File::readCompressedMode(uint32_t length)
 	strm.avail_in = 0;
 	strm.next_in = 0;
 	
-	int zret = inflateInit(&strm);
+	int zret = Z_OK;
+
+	//if(!gzip)
+	//	zret = inflateInit(&strm);
+	//else
+	zret = inflateInit2(&strm, 32+MAX_WBITS);
 	if(zret != Z_OK)
 	{
 		NBT_Error("failed to initialize zlib");
@@ -189,7 +196,7 @@ bool NBT_File::readCompressedMode(uint32_t length)
 	//NBT_Debug("got %i bytes of uncompressed data", buffer_len);
 	compressedMode = COMP_MODE_READ;
 	
-	NBT_Debug("end");
+	//NBT_Debug("end");
 	
 	return true;
 }
@@ -199,7 +206,7 @@ bool NBT_File::writeCompressedMode()
 	if(compressedMode)
 		return false;
 	
-	NBT_Debug("begin");
+	//NBT_Debug("begin");
 	
 	buffer_len = 0;
 	
@@ -215,7 +222,7 @@ bool NBT_File::writeCompressedMode()
 		
 	compressedMode = COMP_MODE_WRITE;
 	
-	NBT_Debug("end");
+	//NBT_Debug("end");
 	
 	return true;
 }
@@ -228,7 +235,7 @@ bool NBT_File::clearCompressedMode()
 		return false;
 	}
 
-	NBT_Debug("");
+	//NBT_Debug("");
 	compressedMode = COMP_MODE_NONE;
 	buffer_len = 0;
 	buffer_pos = 0;
@@ -244,7 +251,7 @@ bool NBT_File::endCompressedMode()
 		return false;
 	}
 	
-	NBT_Debug("begin");
+	//NBT_Debug("begin");
 	
 	bool ret = false;
 	
@@ -266,7 +273,7 @@ bool NBT_File::endCompressedMode()
 	buffer_len = 0;
 	buffer_pos = 0;
 	
-	NBT_Debug("end");
+	//NBT_Debug("end");
 	return ret;
 }
 
@@ -279,7 +286,7 @@ bool NBT_File::writeCompressedData()
 	strm.avail_in = buffer_pos;
 	strm.next_in = buffer;
 	
-	NBT_Debug("write compressed data: %i bytes", buffer_pos);
+	//NBT_Debug("write compressed data: %i bytes", buffer_pos);
 	
 	int ret = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
 	if(ret != Z_OK)
@@ -311,7 +318,7 @@ bool NBT_File::writeCompressedData()
 		ret = deflate(&strm, Z_FINISH);
 		assert(ret != Z_STREAM_ERROR);
 		
-		NBT_Debug("avail_in: %i, avail_out: %i, pos: %i", strm.avail_in, strm.avail_out, pos);
+		//NBT_Debug("avail_in: %i, avail_out: %i, pos: %i", strm.avail_in, strm.avail_out, pos);
 		
 		switch(ret)
 		{
@@ -327,7 +334,7 @@ bool NBT_File::writeCompressedData()
 		
 		if(ret != Z_BUF_ERROR)
 		{
-			NBT_Debug("extending comp buffer pos from %i to %i", comp_buffer_len, (comp_buffer_size - comp_buffer_len) - strm.avail_out);
+			//NBT_Debug("extending comp buffer pos from %i to %i", comp_buffer_len, (comp_buffer_size - comp_buffer_len) - strm.avail_out);
 			comp_buffer_len += comp_buffer_size - strm.avail_out;
 			force_resize = false;
 		}
@@ -335,7 +342,7 @@ bool NBT_File::writeCompressedData()
 		if(force_resize || comp_buffer_len + INITIAL_BUFFER_SIZE < comp_buffer_size)
 		{
 			uint32_t tmp_size = npot(comp_buffer_size);
-			NBT_Debug("comp size: %u, tmp size: %u %i", comp_buffer_size, tmp_size, ret == Z_BUF_ERROR);
+			//NBT_Debug("comp size: %u, tmp size: %u %i", comp_buffer_size, tmp_size, ret == Z_BUF_ERROR);
 			uint8_t *tmp = (uint8_t *)realloc(comp_buffer, tmp_size);
 			if(!tmp)
 			{
@@ -354,7 +361,7 @@ bool NBT_File::writeCompressedData()
 	deflateEnd(&strm);
 	
 	uint32_t tmp_len = comp_buffer_len+1;
-	NBT_Debug("writing chunk len: %i", tmp_len);
+	//NBT_Debug("writing chunk len: %i", tmp_len);
 	if(!write(tmp_len))
 	{
 		free(comp_buffer);
@@ -376,7 +383,7 @@ bool NBT_File::writeCompressedData()
 		return false;
 	}
 	
-	NBT_Debug("compressed %i bytes to %i bytes", buffer_pos, comp_buffer_len);
+	//NBT_Debug("compressed %i bytes to %i bytes", buffer_pos, comp_buffer_len);
 	
 	free(comp_buffer);
 	
@@ -409,7 +416,7 @@ bool NBT_File::seek(int64_t offset, int whence)
 		return true;
 	}
 	
-	NBT_Debug("seeking to: %i", offset);
+	//NBT_Debug("seeking to: %i", offset);
 	if(fseek(fh, offset, whence) == 0)
 		return true;
 	
@@ -432,7 +439,7 @@ bool NBT_File::ensureSize(int32_t len)
 		if(new_size < 4096)
 			new_size = 4096;
 		
-		NBT_Debug("extending buffer from %i bytes to %i bytes (pos:%i)", buffer_size, new_size, buffer_pos);
+		//NBT_Debug("extending buffer from %i bytes to %i bytes (pos:%i)", buffer_size, new_size, buffer_pos);
 		uint8_t *new_buffer = (uint8_t *)realloc(buffer, new_size);
 		if(!new_buffer)
 			return false;

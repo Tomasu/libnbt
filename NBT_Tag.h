@@ -28,12 +28,16 @@ class NBT_Tag
 	public:
 		virtual const char *className();
 
+		NBT_Tag(NBT_Tag *parent, bool named = true, int t = -1);
 		NBT_Tag(bool named = true, int t = -1);
 		virtual ~NBT_Tag();
 		
 		int type() { return tagType; }
 		bool named() { return tagNamed; }
 		const std::string &name() { return tagName; }
+
+		NBT_Tag *parent() { return tagParent; }
+		void setParent(NBT_Tag *parent) { tagParent = parent; }
 
 		virtual std::string serialize();
 
@@ -53,13 +57,16 @@ class NBT_Tag
 		// write tag specific data to NBT_File
 		virtual bool write(NBT_File *fh) = 0;
 
-		
+		int row() { return tagRow; }
+		void setRow(int row) { tagRow = row; }
+
 		static const char *tagNames[TAG_LAST_ITEM];
 	private:
+		NBT_Tag *tagParent;
 		uint8_t tagType;
 		bool tagNamed;
 		std::string tagName;
-	
+		int tagRow;
 };
 
 #endif /* NBT_TAG_H_GUARD */

@@ -14,6 +14,7 @@ class NBT_Tag_Int : public NBT_Tag
 		bool write(NBT_File *fh);
 		
 		int32_t value() { return number; }
+		void setValue(int32_t value) { number = value; }
 
 	private:
 		int32_t number;

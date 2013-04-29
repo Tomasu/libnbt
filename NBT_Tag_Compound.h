@@ -1,12 +1,12 @@
 #ifndef NBT_TAG_COMPOUND_H_GUARD
 #define NBT_TAG_COMPOUND_H_GUARD
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include "NBT_Tag.h"
 
-typedef std::unordered_map<std::string, NBT_Tag *> NBT_TagMap;
+typedef std::vector< std::pair<std::string, NBT_Tag *> > NBT_TagMap;
 
 class NBT_Tag_List;
 class NBT_Tag_Byte_Array;
@@ -25,6 +25,7 @@ class NBT_Tag_Compound : public NBT_Tag
 		bool hasKey(const std::string &key);
 		
 		NBT_Tag *get(const std::string &key);
+		void set(const std::string &key, NBT_Tag *v);
 		
 		int8_t getByte(const std::string &key);
 		int16_t getShort(const std::string &key);
@@ -45,6 +46,8 @@ class NBT_Tag_Compound : public NBT_Tag
 
 		int count() { return children.size(); }
 		
+		NBT_Tag *childAt(int idx);
+
 	private:
 		NBT_TagMap children;
 };

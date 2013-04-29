@@ -14,7 +14,9 @@ class NBT_Tag_Double : public NBT_Tag
 		bool read(NBT_File *fh);
 		bool write(NBT_File *fh);
 		
-		  double value() { return number; }
+		double value() { return number; }
+
+		void setValue(double value) { number = value; }
 
 	private:
 		  double number;

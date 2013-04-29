@@ -15,6 +15,7 @@ class NBT_Tag_Byte : public NBT_Tag
 		bool write(NBT_File *fh);
 		
 		int8_t value() { return byte; }
+		void setValue(int8_t b) { byte = b; }
 
 	private:
 		int8_t byte;

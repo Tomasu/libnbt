@@ -14,6 +14,7 @@ class NBT_Tag_Float : public NBT_Tag
 		bool write(NBT_File *fh);
 		
 		float value() { return number; }
+		void setValue(float value) { number = value; }
 
 	private:
 		float number;

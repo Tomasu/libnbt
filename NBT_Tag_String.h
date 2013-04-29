@@ -17,6 +17,7 @@ class NBT_Tag_String : public NBT_Tag
 		bool write(NBT_File *fh);
 		
 		const std::string &value() { return str; }
+		void setValue(const std::string &value) { str = value; }
 
 	private:
 		std::string str;

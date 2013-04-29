@@ -4,10 +4,10 @@
 
 NBT_Tag_Int_Array::~NBT_Tag_Int_Array()
 {
-	 if(data)
-		 free(data);
+	 if(data_)
+		 free(data_);
 
-	 data = 0;
+	 data_ = 0;
 	 size = 0;
 }
 
@@ -16,13 +16,14 @@ bool NBT_Tag_Int_Array::read(NBT_File *fh)
 	if(!fh->read(&size))
 		return false;
 	
-	data = (int32_t *)malloc(size * sizeof(uint32_t));
+	data_ = (int32_t *)malloc(size * sizeof(uint32_t));
 	
 	for(int i = 0; i < size; i++)
 	{
-		if(!fh->read(&data[i]))
+		if(!fh->read(&data_[i]))
 		{
-			free(data);
+			free(data_);
+			data_ = 0;
 			return false;
 		}
 	}
@@ -40,7 +41,7 @@ bool NBT_Tag_Int_Array::write(NBT_File *fh)
 	
 	for(int i = 0; i < size; i++)
 	{
-		if(!fh->write(data[i]))
+		if(!fh->write(data_[i]))
 		{
 			NBT_Error("failed to write array element [%i]", i);
 			return false;
@@ -48,4 +49,14 @@ bool NBT_Tag_Int_Array::write(NBT_File *fh)
 	}
 	
 	return true;
+}
+
+void NBT_Tag_Int_Array::setData(int32_t s, int32_t *data)
+{
+	if(data_)
+		free(data_);
+	
+	size = s;
+	data_ = (int32_t *)calloc(1, s);
+	memcpy(data_, data, s);
 }

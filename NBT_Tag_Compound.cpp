@@ -67,18 +67,23 @@ bool NBT_Tag_Compound::read(NBT_File *fh)
 	//NBT_Debug("Compound \"%s\" begin", name().c_str());
 	
 	NBT_Tag *tag = 0;
-	
+	int idx = 0;
+
 	do {
 		tag = readTag(fh);
 		if(!tag)
 		{
-			NBT_Error("bah.");
+			//NBT_Error("bah.");
 			break;
 		}
 		
+		tag->setParent(this);
+		tag->setRow(idx++);
+
 		//NBT_Debug("read tag: %s %s", tagNames[tag->type()], tag->name().c_str());
 		//if(tag->type() != TAG_End)
-			children.insert(std::pair<std::string,NBT_Tag*>(tag->name(), tag));
+
+		children.push_back(std::pair<std::string,NBT_Tag*>(tag->name(), tag));
 		
 	} while(tag->type() != TAG_End);
 	
@@ -96,7 +101,7 @@ bool NBT_Tag_Compound::read(NBT_File *fh)
 		return false;
 	}
 	
-	//NBT_Debug("Compound \"%s\" end", name().c_str());
+	//NBT_Debug("Compound \"%s\" end %i", name().c_str(), children.size());
 	return true;
 }
 
@@ -131,69 +136,100 @@ const std::vector<std::string> NBT_Tag_Compound::keys()
 
 bool NBT_Tag_Compound::hasKey(const std::string &key)
 {
-	return children.count(key) > 0;
+	return get(key) != 0;
 }
 
 NBT_Tag *NBT_Tag_Compound::get(const std::string &key)
 {
-	if(children.count(key))
-		return children.at(key);
+	for(std::pair<std::string, NBT_Tag *> &pair: children)
+	{
+		if(pair.first == key)
+		{
+			return pair.second;
+		}
+	}
 
 	return 0;
 }
 
+void NBT_Tag_Compound::set(const std::string &key, NBT_Tag *v)
+{
+	for(std::pair<std::string, NBT_Tag *> &pair: children)
+	{
+		if(pair.first == key)
+		{
+			pair.second = v;
+			return;
+		}
+	}
+	
+	NBT_TagMap::iterator it = children.end();
+	it--;
+	if(it->second->type() == TAG_End)
+		children.insert(it, std::pair<std::string, NBT_Tag *>(key, v));
+	else
+		children.push_back(std::pair<std::string, NBT_Tag *>(key, v));
+}
+
 int8_t NBT_Tag_Compound::getByte(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Byte *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Byte *>(tag)->value();
 
 	return 0;
 }
 
 int16_t NBT_Tag_Compound::getShort(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Short *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Short *>(tag)->value();
 
 	return 0;
 }
 
 int32_t NBT_Tag_Compound::getInt(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Int *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Int *>(tag)->value();
 
 	return 0;
 }
 
 int64_t NBT_Tag_Compound::getLong(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Long *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Long *>(tag)->value();
 
 	return 0;
 }
 
 float NBT_Tag_Compound::getFloat(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Float *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Float *>(tag)->value();
 
 	return 0;
 }
 
 double NBT_Tag_Compound::getDouble(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Double *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Double *>(tag)->value();
 
 	return 0;
 }
 
 std::string NBT_Tag_Compound::getString(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_String *>(children.at(key))->value();
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_String *>(tag)->value();
 
 	return std::string();
 }
@@ -201,27 +237,42 @@ std::string NBT_Tag_Compound::getString(const std::string &key)
 
 NBT_Tag_Compound *NBT_Tag_Compound::getCompound(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_Compound *>(children.at(key));
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Compound *>(tag);
 
 	return 0;
 }
 
 NBT_Tag_List *NBT_Tag_Compound::getList(const std::string &key)
 {
-	if(children.count(key))
-		return dynamic_cast<NBT_Tag_List *>(children.at(key));
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_List *>(tag);
 
 	return 0;
 }
 
 NBT_Tag_Byte_Array *NBT_Tag_Compound::getByteArray(const std::string &key)
 {
-	 return dynamic_cast<NBT_Tag_Byte_Array *>(children.at(key));
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Byte_Array *>(tag);
+
+	return 0;
 }
 
 NBT_Tag_Int_Array *NBT_Tag_Compound::getIntArray(const std::string &key)
 {
-	 return dynamic_cast<NBT_Tag_Int_Array *>(children.at(key));
+	NBT_Tag *tag = get(key);
+	if(tag)
+		return dynamic_cast<NBT_Tag_Int_Array *>(tag);
+
+	return 0;
+}
+
+NBT_Tag *NBT_Tag_Compound::childAt(int idx)
+{
+	return children.at(idx).second;
 }
 

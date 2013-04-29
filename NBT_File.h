@@ -20,7 +20,7 @@ class NBT_File
       
       void close();
       
-		bool readCompressedMode(uint32_t length);
+		bool readCompressedMode(uint32_t length, bool gzip = false);
 		bool writeCompressedMode();
 		
 		bool endCompressedMode();
@@ -126,6 +126,11 @@ inline bool NBT_File::read(uint8_t *out, uint32_t len)
 		{
 			memcpy(out, buffer + buffer_pos, sizeof(uint8_t) * len);
 			buffer_pos += sizeof(uint8_t) * len;
+			//for(uint32_t i = 0; i < len; i++)
+			//{
+			//	printf("%02x ", out[i]);
+			//}
+			//printf("\n");
 			return true;
 		}
 		

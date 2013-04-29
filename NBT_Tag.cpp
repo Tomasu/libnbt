@@ -19,7 +19,12 @@
 #include <sstream>
 #include <typeinfo>
 
-NBT_Tag::NBT_Tag(bool named, int t) : tagType(t), tagNamed(named) 
+NBT_Tag::NBT_Tag(NBT_Tag *parent, bool named, int t) : tagParent(parent), tagType(t), tagNamed(named)
+{
+
+}
+
+NBT_Tag::NBT_Tag(bool named, int t) : tagParent(0), tagType(t), tagNamed(named)
 {
 	
 }

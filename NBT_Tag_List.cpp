@@ -46,6 +46,8 @@ bool NBT_Tag_List::read(NBT_File *fh)
 			break;
 		}
 		
+		tag->setRow(i);
+		tag->setParent(this);
 		item_list.push_back(tag);
 	}
 	
@@ -104,4 +106,22 @@ std::string NBT_Tag_List::serialize()
    }
    str << "}\n";
    return str.str();
+}
+
+void NBT_Tag_List::setItemAt(uint32_t i, NBT_Tag *t)
+{
+	if(checkType(t) && i < item_list.size())
+		item_list[i] = t;
+}
+
+void NBT_Tag_List::insertItem(uint32_t i, NBT_Tag *t)
+{
+	if(checkType(t) && i <= item_list.size())
+		item_list.insert(item_list.begin()+i, t);
+}
+
+void NBT_Tag_List::addItem(NBT_Tag *t)
+{
+	if(checkType(t))
+		item_list.push_back(t);
 }

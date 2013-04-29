@@ -14,7 +14,7 @@ class NBT_Tag_Long : public NBT_Tag
 		bool write(NBT_File *fh);
 		
 		int64_t value() { return number; }
-
+		void setValue(int64_t value) { number = value; }
 	private:
 		int64_t number;
 };
