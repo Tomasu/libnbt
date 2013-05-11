@@ -73,7 +73,7 @@ bool NBT_Tag_List::write(NBT_File *fh)
 		return false;
 	}
 	
-	if(!fh->write(item_list.size()))
+	if(!fh->write((uint32_t)item_list.size()))
 	{
 		NBT_Error("failed to write list size to buffer");
 		return false;

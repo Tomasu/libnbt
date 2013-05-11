@@ -16,6 +16,8 @@ class NBT_Tag_Float : public NBT_Tag
 		float value() { return number; }
 		void setValue(float value) { number = value; }
 
+		std::string serialize();
+		
 	private:
 		float number;
 };

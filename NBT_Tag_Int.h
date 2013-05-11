@@ -16,6 +16,8 @@ class NBT_Tag_Int : public NBT_Tag
 		int32_t value() { return number; }
 		void setValue(int32_t value) { number = value; }
 
+		std::string serialize();
+		
 	private:
 		int32_t number;
 };

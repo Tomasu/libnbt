@@ -77,6 +77,8 @@ class NBT_File
 		bool write(double in);
 		bool write(const std::string &in);
 		
+		uint32_t lastWriteBufferLen() { return last_write_buffer_len; }
+		
    private:
 		std::string filename;
 		bool readonly;
@@ -94,6 +96,8 @@ class NBT_File
 		uint32_t buffer_size;
 		uint32_t buffer_len;
 		uint32_t buffer_pos;
+		
+		uint32_t last_write_buffer_len;
 		
 		static int32_t npot(int32_t in)
 		{
@@ -298,6 +302,7 @@ inline bool NBT_File::write(uint32_t *in, uint32_t len)
 {
 	bool ret = true;
 	
+	//NBT_Debug("write %i integers", len);
 	for(uint32_t i = 0; i < len && ret != false; i++)
 	{
 		ret = write(in[i]);
@@ -310,6 +315,7 @@ inline bool NBT_File::write(uint64_t in)
 {
 	uint8_t tmp[sizeof(in)], *ptr = (uint8_t *)&in;
 	
+	//NBT_Debug("write 64bit int");
 	tmp[0] = ptr[7];
 	tmp[1] = ptr[6];
 	tmp[2] = ptr[5];
@@ -324,18 +330,22 @@ inline bool NBT_File::write(uint64_t in)
 
 inline bool NBT_File::write(float in)
 {
-	return write((uint32_t)in);
+	//NBT_Debug("write float");
+	return write(*(uint32_t*)&in);
 }
 
 inline bool NBT_File::write(double in)
 {
-	return write((uint64_t)in);
+	//NBT_Debug("write double");
+	return write(*(uint64_t *)&in);
 }
 
 inline bool NBT_File::write(const std::string &in)
 {
 	uint16_t len = in.length();
 
+	//NBT_Debug("write %i byte string", len);
+	
 	if(!ensureSize(sizeof(len) + sizeof(int8_t) * len))
 		return false;
 

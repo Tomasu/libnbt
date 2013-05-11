@@ -17,7 +17,8 @@ class NBT_Tag_Double : public NBT_Tag
 		double value() { return number; }
 
 		void setValue(double value) { number = value; }
-
+		std::string serialize();
+	
 	private:
 		  double number;
 };

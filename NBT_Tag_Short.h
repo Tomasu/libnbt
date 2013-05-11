@@ -18,6 +18,8 @@ class NBT_Tag_Short : public NBT_Tag
 		int16_t value() { return number; }
 		void setValue(int16_t value) { number = value; }
 
+		std::string serialize();
+		
 	private:
 		int16_t number;
 };

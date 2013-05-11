@@ -17,6 +17,8 @@ class NBT_Tag_Byte : public NBT_Tag
 		int8_t value() { return byte; }
 		void setValue(int8_t b) { byte = b; }
 
+		std::string serialize();
+		
 	private:
 		int8_t byte;
 };

@@ -15,6 +15,9 @@ class NBT_Tag_Long : public NBT_Tag
 		
 		int64_t value() { return number; }
 		void setValue(int64_t value) { number = value; }
+		
+		std::string serialize();
+		
 	private:
 		int64_t number;
 };

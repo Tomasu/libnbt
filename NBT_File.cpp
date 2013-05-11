@@ -151,15 +151,18 @@ bool NBT_File::readCompressedMode(uint32_t length, bool gzip)
 		
 		zret = inflate(&strm, Z_SYNC_FLUSH);
 		assert(zret != Z_STREAM_ERROR);
+//		NBT_Debug("zret: %i", zret);
 		
 		switch(zret)
 		{
 			case Z_NEED_DICT:
+				NBT_Error("need dict?");
 				ret = Z_DATA_ERROR;
 			case Z_DATA_ERROR:
 			case Z_MEM_ERROR:
+//				NBT_Debug("zError: %i", zret);
+				NBT_Error("decompression error: %s", zError(zret));
 				(void)inflateEnd(&strm);
-				NBT_Error("decompression error: %s", zError(ret));
 				return false;
 		}
 		
@@ -206,6 +209,7 @@ bool NBT_File::writeCompressedMode()
 	if(compressedMode)
 		return false;
 	
+	//NBT_Debug("enter writeCompressedMode");
 	//NBT_Debug("begin");
 	
 	buffer_len = 0;
@@ -295,6 +299,7 @@ bool NBT_File::writeCompressedData()
 		return false;
 	}
 	
+	uint32_t blen = buffer_pos;
 	uint32_t pos = 0;
 	uint32_t comp_buffer_size = INITIAL_BUFFER_SIZE;
 	uint32_t comp_buffer_len = 0;
@@ -383,7 +388,9 @@ bool NBT_File::writeCompressedData()
 		return false;
 	}
 	
-	//NBT_Debug("compressed %i bytes to %i bytes", buffer_pos, comp_buffer_len);
+	last_write_buffer_len = comp_buffer_len+5;
+	
+	//NBT_Debug("compressed %i bytes to %i bytes", blen, comp_buffer_len);
 	
 	free(comp_buffer);
 	

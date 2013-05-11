@@ -107,8 +107,10 @@ bool NBT_Tag_Compound::read(NBT_File *fh)
 
 bool NBT_Tag_Compound::write(NBT_File *fh)
 {
+	//NBT_Debug("write %i children. named:%i", children.size(), named());
 	for(auto &child: children)
 	{
+	//	NBT_Debug("write: named:%i %s::%s", child.second->named(), named() ? name().c_str() : tagNames[type()], child.second->named() ? child.second->name().c_str() : tagNames[child.second->type()]);
 		if(!child.second->writeTag(fh))
 		{
 			NBT_Error("failed to encode tag, bailing");
