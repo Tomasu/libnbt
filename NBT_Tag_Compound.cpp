@@ -70,7 +70,7 @@ bool NBT_Tag_Compound::read(NBT_File *fh)
 	int idx = 0;
 
 	do {
-		tag = readTag(fh);
+		tag = LoadTag(fh);
 		if(!tag)
 		{
 			//NBT_Error("bah.");
@@ -278,3 +278,20 @@ NBT_Tag *NBT_Tag_Compound::childAt(int idx)
 	return children.at(idx).second;
 }
 
+NBT_Tag *NBT_Tag_Compound::remove(NBT_Tag *tag)
+{
+	uint32_t idx = tag->row();
+	
+	if(idx >= children.size())
+		return 0;
+	
+	children.erase(children.begin()+idx);
+	
+	// update row index
+	for(uint32_t i = idx; i < children.size(); i++)
+	{
+		children[i].second->setRow(i);
+	}
+	
+	return tag;
+}

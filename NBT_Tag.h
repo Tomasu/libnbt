@@ -46,7 +46,8 @@ class NBT_Tag
 		static NBT_Tag *tagFromType(uint8_t id, bool named = true);
 
 		// read tag from NBT_File, named or unnamed
-		static NBT_Tag *readTag(NBT_File *fh, bool named = true);
+		static NBT_Tag *LoadTag(NBT_File *fh, bool named = true);
+		bool readTag(NBT_File *fh, bool named = true);
 		
 		// read tag specific data from NBT_File
 		virtual bool read(NBT_File *fh) = 0;
@@ -61,7 +62,7 @@ class NBT_Tag
 		void setRow(int row) { tagRow = row; }
 
 		static const char *tagNames[TAG_LAST_ITEM];
-	private:
+	protected:
 		NBT_Tag *tagParent;
 		uint8_t tagType;
 		bool tagNamed;

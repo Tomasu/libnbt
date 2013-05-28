@@ -48,7 +48,12 @@ class NBT_Tag_Compound : public NBT_Tag
 		
 		NBT_Tag *childAt(int idx);
 
-	private:
+		NBT_Tag *remove(NBT_Tag *);
+		
+		// not really public...
+		NBT_TagMap &_get_children() { return children; }
+		
+	protected:
 		NBT_TagMap children;
 };
 

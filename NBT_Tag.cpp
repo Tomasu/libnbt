@@ -78,7 +78,7 @@ bool NBT_Tag::writeTag(NBT_File *fh)
 	return write(fh);
 }
 
-NBT_Tag *NBT_Tag::readTag(NBT_File *fh, bool named)
+NBT_Tag *NBT_Tag::LoadTag(NBT_File *fh, bool named)
 {
 	//NBT_Debug("begin");
 	
@@ -120,6 +120,42 @@ NBT_Tag *NBT_Tag::readTag(NBT_File *fh, bool named)
 	
 	//NBT_Debug("end");
 	return tag;
+}
+
+bool NBT_Tag::readTag(NBT_File *fh, bool named)
+{
+	uint8_t readType = TAG_UNKNOWN;
+	
+	if(!fh->read(&readType))
+	{
+		//NBT_Error("failed to read tag type");
+		return false;
+	}
+	
+	if(readType != tagType)
+	{
+		NBT_Error("read wrong tag type, got %s, wanted %s", tagNames[readType], tagNames[tagType]);
+		return false;
+	}
+	
+	// don't read in name if we're an unnamed tag
+	// TAG_End is special, it is never named
+	if(named && tagType != TAG_End)
+	{
+		if(!fh->read(tagName))
+		{
+			NBT_Error("failed to read tag name :(");
+			return false;
+		}
+	}
+	
+	if(!read(fh))
+	{
+		NBT_Error("failed to read tag specifics");
+		return false;
+	}
+	
+	return true;
 }
 
 NBT_Tag *NBT_Tag::tagFromType(uint8_t id, bool named)

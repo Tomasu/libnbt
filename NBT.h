@@ -13,12 +13,7 @@ class NBT : public NBT_Tag_Compound
 		NBT();
 		~NBT();
 		
-		bool read(NBT_File *fh);
-		bool write(NBT_File *fh);
-
-	private:
-
-	
+		bool load(const std::string &path, bool compressed = true);
 };
 
 #endif /* NBT_H_GUARD */
