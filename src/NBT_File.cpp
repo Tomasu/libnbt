@@ -87,7 +87,7 @@ void NBT_File::close()
 	fh = 0;
 }
 
-bool NBT_File::readCompressedMode(uint32_t length, bool gzip)
+bool NBT_File::readCompressedMode(uint32_t length, bool /*gzip*/)
 {
 	if(compressedMode)
 		return false;
@@ -299,8 +299,6 @@ bool NBT_File::writeCompressedData()
 		return false;
 	}
 	
-	uint32_t blen = buffer_pos;
-	uint32_t pos = 0;
 	uint32_t comp_buffer_size = INITIAL_BUFFER_SIZE;
 	uint32_t comp_buffer_len = 0;
 	uint8_t *comp_buffer = (uint8_t*)realloc(0, comp_buffer_size);

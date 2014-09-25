@@ -82,7 +82,7 @@ add_library(nbt SHARED ${SOURCES} ${HEADERS})
 
 target_link_libraries(nbt ${ZLIB_LIBRARIES})
 
-set_target_properties(nbt PROPERTIES PUBLIC_HEADER ${HEADERS})
+set_target_properties(nbt PROPERTIES PUBLIC_HEADER "${HEADERS}")
   
   
 # Add all targets to the build-tree export set
