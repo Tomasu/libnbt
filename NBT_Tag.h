@@ -26,6 +26,8 @@ class NBT_File;
 class NBT_Tag
 {
 	public:
+		enum TEST { TEST_1 = 1, TEST_2 };
+		
 		virtual const char *className();
 
 		NBT_Tag(NBT_Tag *parent, bool named = true, int t = -1);
