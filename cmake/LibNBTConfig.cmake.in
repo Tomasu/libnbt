@@ -1,0 +1,16 @@
+# - Config file for the LibNBT package
+# It defines the following variables
+#  LIBNBT_INCLUDE_DIRS - include directories for FooBar
+#  LIBNBT_LIBRARIES    - libraries to link against
+ 
+# Compute paths
+get_filename_component(LIBNBT_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(LIBNBT_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET nbt AND NOT LIBNBT_BINARY_DIR)
+  include("${LIBNBT_CMAKE_DIR}/LibNBTTargets.cmake")
+endif()
+ 
+# These are IMPORTED targets created by LibNBTTargets.cmake
+set(LIBNBT_LIBRARIES nbt)
