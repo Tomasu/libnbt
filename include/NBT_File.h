@@ -331,13 +331,15 @@ inline bool NBT_File::write(uint64_t in)
 inline bool NBT_File::write(float in)
 {
 	//NBT_Debug("write float");
-	return write(*(uint32_t*)&in);
+	uint32_t *ptr = (uint32_t*)&in;
+	return write(*ptr);
 }
 
 inline bool NBT_File::write(double in)
 {
 	//NBT_Debug("write double");
-	return write(*(uint64_t *)&in);
+	uint64_t *ptr = (uint64_t*)&in;
+	return write(*ptr);
 }
 
 inline bool NBT_File::write(const std::string &in)
