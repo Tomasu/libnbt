@@ -11,6 +11,16 @@ typedef std::vector< std::pair<std::string, NBT_Tag *> > NBT_TagMap;
 class NBT_Tag_List;
 class NBT_Tag_Byte_Array;
 class NBT_Tag_Int_Array;
+class NBT_Tag_Byte;
+class NBT_Tag_Double;
+class NBT_Tag_Float;
+class NBT_Tag_Int;
+class NBT_Tag_Long;
+class NBT_Tag_Short;
+class NBT_Tag_String;
+
+template<typename T>
+struct MapTagType;
 
 class NBT_Tag_Compound : public NBT_Tag
 {
@@ -55,6 +65,68 @@ class NBT_Tag_Compound : public NBT_Tag
 		
 	protected:
 		NBT_TagMap children;
+		
+		/*
+		template<typename T>
+			typename MapTagType<T>::type getValue(T *tag, typename MapTagType<T>::type def = MapTagType<T>::def)
+		{
+			T *tag = dynamic_cast<T>(tag);
+			if(!tag)
+				return def;
+			
+			return tag->value();
+		}*/
 };
+
+/*
+template<>
+struct MapTagType<NBT_Tag_Byte>
+{
+	typedef int8_t type;
+	const static type def = 0;
+}
+
+template<>
+struct MapTagType<NBT_Tag_Double>
+{
+	typedef double type;
+	const static type def = 0.0;
+}
+
+template<>
+struct MapTagType<NBT_Tag_Float>
+{
+	typedef float type;
+	const static type def = 0.0f;
+}
+
+template<>
+struct MapTagType<NBT_Tag_Int>
+{
+	typedef int32_t type;
+	const static type def = 0;
+}
+
+template<>
+struct MapTagType<NBT_Tag_Long>
+{
+	typedef int64_t type;
+	const static type def = 0;
+}
+
+template<>
+struct MapTagType<NBT_Tag_Short>
+{
+	typedef int16_t type;
+	const static type def = 0;
+}
+
+template<>
+struct MapTagType<NBT_Tag_String>
+{
+	typedef std::string type;
+	const static type def = std::string();
+}
+*/
 
 #endif /* NBT_TAG_COMPOUND_H_GUARD */
