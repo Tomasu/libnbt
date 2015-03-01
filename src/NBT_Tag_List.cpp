@@ -35,7 +35,6 @@ bool NBT_Tag_List::read(NBT_File *fh)
 		if(!tag)
 		{
 			NBT_Warn("failed to create tag for tag list");
-			delete tag;
 			break;
 		}
 		

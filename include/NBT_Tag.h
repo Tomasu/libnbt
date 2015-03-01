@@ -70,6 +70,8 @@ class NBT_Tag
 		bool tagNamed;
 		std::string tagName;
 		int tagRow;
+		
+		static int totalTags;
 };
 
 #endif /* NBT_TAG_H_GUARD */

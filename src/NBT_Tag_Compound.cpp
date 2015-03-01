@@ -73,7 +73,7 @@ bool NBT_Tag_Compound::read(NBT_File *fh)
 		tag = LoadTag(fh);
 		if(!tag)
 		{
-			//NBT_Error("bah.");
+			NBT_Error("failed to load child tag.");
 			break;
 		}
 		
@@ -89,7 +89,7 @@ bool NBT_Tag_Compound::read(NBT_File *fh)
 	
 	if(!tag || tag->type() != TAG_End)
 	{
-		NBT_Error("malformed compound chunk, missing TAG_End");
+		NBT_Error("malformed compound tag, missing TAG_End");
 		
 		for(auto &child: children)
 		{

@@ -19,19 +19,24 @@
 #include <sstream>
 #include <typeinfo>
 
+int NBT_Tag::totalTags = 0;
+
 NBT_Tag::NBT_Tag(NBT_Tag *parent, bool named, int t) : tagParent(parent), tagType(t), tagNamed(named)
 {
-
+	totalTags++;
+	//NBT_Debug("new [%i] %s(%p:parent=%p)", totalTags, tagNames[t], this, parent);
 }
 
 NBT_Tag::NBT_Tag(bool named, int t) : tagParent(0), tagType(t), tagNamed(named)
 {
-	
+	totalTags++;
+	//NBT_Debug("new [%i] %s(%p)", totalTags, tagNames[tagType], this);
 }
 
 NBT_Tag::~NBT_Tag()
 {
-	//NBT_Debug("delete %s \"%s\"", tagNames[tagType], tagName.c_str());
+	totalTags--;
+	//NBT_Debug("delete [%i] %s \"%s\"", totalTags, tagNames[tagType], tagName.c_str());
 }
 
 const char *NBT_Tag::className()
