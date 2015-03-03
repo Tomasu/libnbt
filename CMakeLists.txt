@@ -9,6 +9,15 @@ set(LIBNBT_VERSION
   
 find_package(ZLIB REQUIRED)
 
+set(MODE SHARED)
+
+option(SHARED "Build shared library" ON)
+
+if(NOT SHARED)
+	add_definitions(-static)
+	set(MODE STATIC)
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	add_definitions(-DDEBUG -O0 -ggdb3)
 else()
@@ -78,7 +87,7 @@ set(SOURCES
 )
 
 
-add_library(nbt SHARED ${SOURCES} ${HEADERS})
+add_library(nbt ${MODE} ${SOURCES} ${HEADERS})
 
 target_link_libraries(nbt ${ZLIB_LIBRARIES})
 
@@ -125,6 +134,7 @@ install(TARGETS nbt
 	EXPORT LibNBTTargets
 	RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
 	LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+	ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
 	PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/libnbt"
 	COMPONENT dev)
 
