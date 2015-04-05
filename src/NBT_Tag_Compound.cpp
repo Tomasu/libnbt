@@ -38,7 +38,7 @@ std::string NBT_Tag_Compound::serialize()
 {
 	std::stringstream str;
 	if(named())
-      str << "Compound(" << name() << ")";
+      str << "Compound(" << tagName << ")";
       
    if(count() < 1)
    {

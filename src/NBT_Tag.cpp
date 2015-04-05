@@ -114,8 +114,13 @@ NBT_Tag *NBT_Tag::LoadTag(NBT_File *fh, bool named)
 			delete tag;
 			return 0;
 		}
+		else
+		{
+			//NBT_Debug("load tag: %s %s", tagNames[tag->tagType], tag->tagName.c_str());
+		}
 	}
 	
+	//NBT_Debug("tagName: %s %s", tagNames[tag->tagType], tag->tagName.c_str());
 	if(!tag->read(fh))
 	{
 		NBT_Error("failed to read tag specifics");
@@ -123,7 +128,8 @@ NBT_Tag *NBT_Tag::LoadTag(NBT_File *fh, bool named)
 		return 0;
 	}
 	
-	//NBT_Debug("end");
+	//NBT_Debug("end %s \"%s\"", tagNames[tag->tagType], tag->tagName.c_str());
+	//NBT_Debug("ser: %s", tag->serialize().c_str());
 	return tag;
 }
 
@@ -151,6 +157,10 @@ bool NBT_Tag::readTag(NBT_File *fh, bool named)
 		{
 			NBT_Error("failed to read tag name :(");
 			return false;
+		}
+		else
+		{
+			NBT_Debug("read tag: %s", tagName.c_str());
 		}
 	}
 	

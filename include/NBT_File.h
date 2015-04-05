@@ -120,6 +120,10 @@ class NBT_File
 		}
 		
 		bool writeCompressedData();
+		
+		uint8_t *scratch_buffer;
+		size_t scratch_buffer_size;
+		bool ensure_scratch_buffer_size(size_t s);
 };
 
 inline bool NBT_File::read(uint8_t *out, uint32_t len)
@@ -144,7 +148,7 @@ inline bool NBT_File::read(uint8_t *out, uint32_t len)
 	if(!fh)
 		return false;
 	
-	uint16_t ret = fread(out, sizeof(uint8_t), len, fh);
+	uint16_t ret = std::fread(out, sizeof(uint8_t), len, fh);
 	if(ret != sizeof(uint8_t) * len)
 		return false;
 	
@@ -226,19 +230,19 @@ inline bool NBT_File::read(std::string &out)
 	if(len == 0)
 		return true;
 	
-	uint8_t *temp = (uint8_t *)malloc(len+1);
-	if(!temp)
+	if(!ensure_scratch_buffer_size(len+1))
 		return false;
 	
-	temp[len] = 0;
+	scratch_buffer[len] = 0;
 	
-	if(!read(temp, len))
+	if(!read(scratch_buffer, len))
+	{
+		NBT_Debug("failed to read string from nbt file :(");
 		return false;
+	}
 	
-	out.assign((char*)temp, len);
-	
-	free(temp);
-
+	out.assign((char*)scratch_buffer, len);
+		
 	return true;
 }
 

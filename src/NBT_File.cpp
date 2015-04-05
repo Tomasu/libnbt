@@ -10,14 +10,14 @@
 
 NBT_File::NBT_File() :
 	readonly(true), append(false), compressedMode(COMP_MODE_NONE),
-	fh(0), buffer(0), buffer_size(0), buffer_pos(0)
+	fh(0), buffer(0), buffer_size(0), buffer_pos(0), scratch_buffer(nullptr), scratch_buffer_size(0)
 {
 
 }
 
 NBT_File::NBT_File(const std::string &filename, bool readonly, bool append) :
 	filename(filename), readonly(readonly), append(append), compressedMode(COMP_MODE_NONE),
-	fh(0), buffer(0), buffer_size(0), buffer_pos(0)
+	fh(0), buffer(0), buffer_size(0), buffer_pos(0), scratch_buffer(nullptr), scratch_buffer_size(0)
 {
 
 }
@@ -82,6 +82,12 @@ void NBT_File::close()
 	buffer_len = 0;
 	buffer = 0;
 
+	if(scratch_buffer)
+		free(scratch_buffer);
+	
+	scratch_buffer = nullptr;
+	scratch_buffer_size = 0;
+	
 	if(fh)
 		fclose(fh);
 
@@ -100,7 +106,7 @@ bool NBT_File::readCompressedMode(uint32_t length, bool /*gzip*/)
 	if(!compressedData)
 		return false;
 
-	uint32_t ret = fread(compressedData, 1, length, fh);
+	uint32_t ret = std::fread(compressedData, 1, length, fh);
 	if(ret != length)
 	{
 		NBT_Error("fread did not read enough data; ret: %d, length: %d, EOF: _%d_;\n", ret, length, feof(fh));
@@ -130,7 +136,7 @@ bool NBT_File::readCompressedMode(uint32_t length, bool /*gzip*/)
 	if(buffer_size < INITIAL_BUFFER_SIZE)
 		buffer_size = INITIAL_BUFFER_SIZE;
 
-	buffer = (uint8_t*)realloc(buffer, buffer_size);
+	buffer = (uint8_t*)std::realloc(buffer, buffer_size);
 	if(!buffer)
 	{
 		NBT_Error("failed to allocate dest buffer");
@@ -447,7 +453,7 @@ bool NBT_File::ensureSize(int32_t len)
 			new_size = 4096;
 
 		//NBT_Debug("extending buffer from %i bytes to %i bytes (pos:%i)", buffer_size, new_size, buffer_pos);
-		uint8_t *new_buffer = (uint8_t *)realloc(buffer, new_size);
+		uint8_t *new_buffer = (uint8_t *)std::realloc(buffer, new_size);
 		if(!new_buffer)
 			return false;
 
@@ -455,5 +461,15 @@ bool NBT_File::ensureSize(int32_t len)
 		buffer_size = new_size;
 	}
 
+	return true;
+}
+
+bool NBT_File::ensure_scratch_buffer_size(size_t s)
+{
+	uint8_t *tmp = (uint8_t*)std::realloc(scratch_buffer, std::max(scratch_buffer_size, s));
+	if(!tmp)
+		return false;
+	
+	scratch_buffer = tmp;
 	return true;
 }
